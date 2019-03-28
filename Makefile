@@ -1,7 +1,7 @@
 VERSION := $(shell cat main.go | grep -v '//' | grep -m 1 Version | sed -e 's/Version =//g' | xargs)
 name := $(shell basename "$(CURDIR)")
 package := $(CURDIR:$(GOPATH)/src/%=%)
-registry := quay.io/unity3d
+registry := kylemcc/kafka-archiver
 
 # -- START GENERIC BUILD/PUSH -- #
 
