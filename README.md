@@ -37,6 +37,8 @@ Usage of kafka-archiver:
       Number of seconds to wait before starting consuming. (default "0s")
   -consumer-group string
       Name of your kafka consumer group. (required)
+  -datadog
+      Enable sending metrics to Statsd/Datadog (default true)
   -datadog-host string
       The host where the datadog agents listens to. (default "localhost:2585")
   -log_backtrace_at value
