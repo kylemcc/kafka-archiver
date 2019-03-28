@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -19,6 +20,7 @@ import (
 	cluster "github.com/bsm/sarama-cluster"
 	humanize "github.com/dustin/go-humanize"
 	"github.com/golang/glog"
+	gzip "github.com/klauspost/pgzip"
 	"github.com/kylemcc/kafka-archiver/buffer"
 	"github.com/kylemcc/kafka-archiver/partitioner"
 	"github.com/vrischmann/flagutil"
@@ -351,11 +353,27 @@ func (w *Worker) bufferListener() {
 	defer w.wg.Done()
 
 	for fl := range w.bufferFlush {
-		if err := w.upload(fl); err != nil {
+		cfd, err := w.compress(fl.Path)
+		if err != nil {
+			glog.Fatalf("error writing compressed file: %v", err)
+		}
+
+		// Get the S3 Key used to decide the S3 path/key.
+		s3Key := w.partitioner.GetKey(fl)
+		if err := w.upload(s3Key, cfd); err != nil {
+			glog.Fatal(err)
+		}
+
+		// Call the notify function with the s3Key and the flushed file.
+		if err := w.notify(s3Key, fl); err != nil {
+			metrics.Incr("error", []string{"kind:notification"}, 1)
 			glog.Fatal(err)
 		}
 
 		if err := os.Remove(fl.Path); err != nil {
+			glog.Error("could not cleanup disk space: ", err)
+		}
+		if err := os.Remove(fl.Path + ".gz"); err != nil {
 			glog.Error("could not cleanup disk space: ", err)
 		}
 
@@ -370,4 +388,42 @@ func (w *Worker) closeBuffers() {
 
 	w.partitioner.Close()
 	close(w.bufferFlush)
+}
+
+// compress gzips a file and returns a pointer to the new gzipped
+// file or ar error. The name of the new file will be f.Name() + ".gz"
+//
+// It is the caller's responsibility to close the returned file
+func (w *Worker) compress(f string) (string, error) {
+	fd, err := os.Open(f)
+	if err != nil {
+		return "", err
+	}
+	defer fd.Close()
+
+	cfd, err := os.Create(f + ".gz")
+	if err != nil {
+		return "", fmt.Errorf("error creating compressed file: %v", err)
+	}
+	defer cfd.Close()
+
+	gzw, err := gzip.NewWriterLevel(cfd, gzip.BestCompression)
+	if err != nil {
+		return "", err
+	}
+	if _, err := io.Copy(gzw, fd); err != nil {
+		return "", fmt.Errorf("error writing compressed file: %v", err)
+	}
+
+	if err := gzw.Flush(); err != nil {
+		return "", fmt.Errorf("error writing compressed file: %v", err)
+	}
+	if err := gzw.Close(); err != nil {
+		return "", fmt.Errorf("error writing compressed file: %v", err)
+	}
+	if err := cfd.Sync(); err != nil {
+		return "", fmt.Errorf("error writing compressed file: %v", err)
+	}
+
+	return cfd.Name(), nil
 }

@@ -16,7 +16,6 @@ import (
 
 	"github.com/Shopify/sarama"
 	"github.com/golang/glog"
-	gzip "github.com/klauspost/pgzip"
 )
 
 // PID for unique filename.
@@ -89,7 +88,6 @@ type Buffer struct {
 	opened time.Time
 	writes int64
 	bytes  int64
-	gzf    *gzip.Writer
 	file   *os.File
 	tick   *time.Ticker
 }
@@ -260,19 +258,19 @@ func (b *Buffer) open() error {
 		return err
 	}
 
-	gzw, err := gzip.NewWriterLevel(f, gzip.BestCompression)
-	if err != nil {
-		return err
-	}
+	//gzw, err := gzip.NewWriterLevel(f, gzip.BestCompression)
+	//if err != nil {
+	//	return err
+	//}
 
-	// Override default concurrency settings. Use 4 concurrent blocks.
-	if err := gzw.SetConcurrency(250000, 4); err != nil {
-		glog.Fatal("Gzip configuration issue: ", err)
-	}
+	//// Override default concurrency settings. Use 4 concurrent blocks.
+	//if err := gzw.SetConcurrency(250000, 4); err != nil {
+	//	glog.Fatal("Gzip configuration issue: ", err)
+	//}
 
 	glog.V(8).Infof("buffer size %d", b.BufferSize)
 	if b.BufferSize != 0 {
-		b.buf = bufio.NewWriterSize(gzw, b.BufferSize)
+		b.buf = bufio.NewWriterSize(f, b.BufferSize)
 	}
 
 	glog.V(8).Infof("reset state")
@@ -281,7 +279,6 @@ func (b *Buffer) open() error {
 	b.writes = 0
 	b.bytes = 0
 	b.file = f
-	b.gzf = gzw
 
 	return nil
 }
@@ -295,7 +292,7 @@ func (b *Buffer) write(data []byte) (int, error) {
 		return b.buf.Write(data)
 	}
 
-	return b.gzf.Write(data)
+	return b.file.Write(data)
 }
 
 // Flush for the given reason and re-open.
@@ -347,14 +344,6 @@ func (b *Buffer) close() error {
 		if err != nil {
 			return err
 		}
-	}
-
-	if err := b.gzf.Flush(); err != nil {
-		return err
-	}
-
-	if err := b.gzf.Close(); err != nil {
-		return err
 	}
 
 	if err := b.file.Sync(); err != nil {

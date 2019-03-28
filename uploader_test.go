@@ -49,12 +49,14 @@ func TestUploadWithDefaultPartitioner(t *testing.T) {
 
 	// Create worker and upload.
 	w := newTestWorker(partitioner.New(&partitioner.Config{Type: "DefaultPartitioner"}), s3ClientMock)
-	w.upload(&buffer.Flush{
+	fl := &buffer.Flush{
 		Topic:      "testTopic1",
 		Path:       f.Name(),
 		Partition:  10,
 		LastOffset: 5555,
-	})
+	}
+	key := w.partitioner.GetKey(fl)
+	w.upload(key, f.Name())
 }
 
 func TestUploadWithTimeFieldPartitioner(t *testing.T) {
@@ -86,13 +88,15 @@ func TestUploadWithTimeFieldPartitioner(t *testing.T) {
 		BaseFolder:      "backup",
 	}), s3ClientMock)
 
-	w.upload(&buffer.Flush{
+	fl := &buffer.Flush{
 		Topic:      "testTopic2",
 		Path:       f.Name(),
 		Partition:  10,
 		LastOffset: 808,
 		Ctx:        context.WithValue(context.Background(), "hourBucket", time.Unix(1444262400, 0).UTC()),
-	})
+	}
+	key := w.partitioner.GetKey(fl)
+	w.upload(key, f.Name())
 }
 
 func TestUploadWithIsoDateFieldPartitioner(t *testing.T) {
@@ -128,11 +132,13 @@ func TestUploadWithIsoDateFieldPartitioner(t *testing.T) {
 		BaseFolder:      "backup",
 	}), s3ClientMock)
 
-	w.upload(&buffer.Flush{
+	fl := &buffer.Flush{
 		Topic:      "testTopic2",
 		Path:       f.Name(),
 		Partition:  10,
 		LastOffset: 808,
 		Ctx:        context.WithValue(context.Background(), "hourBucket", hourBucket.UTC()),
-	})
+	}
+	key := w.partitioner.GetKey(fl)
+	w.upload(key, f.Name())
 }

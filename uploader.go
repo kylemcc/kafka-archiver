@@ -71,7 +71,7 @@ func (w *Worker) notify(fKey string, f *buffer.Flush) error {
 
 // upload received a flushed file and uses the given cloud provider settings
 // to upload the file.
-func (w *Worker) upload(f *buffer.Flush) error {
+func (w *Worker) upload(s3Key, path string) error {
 	if !w.s3enabled {
 		return nil
 	}
@@ -80,15 +80,12 @@ func (w *Worker) upload(f *buffer.Flush) error {
 	start := time.Now()
 
 	// Open the file.
-	fd, err := os.Open(f.Path)
+	fd, err := os.Open(path)
 	if err != nil {
 		metrics.Incr("error", []string{"kind:s3-upload"}, 1)
 		return err
 	}
 	defer fd.Close()
-
-	// Get the S3 Key used to decide the S3 path/key.
-	s3Key := w.partitioner.GetKey(f)
 
 	// Create a new exponential backoff provider.
 	b := backoff.NewExponentialBackOff()
@@ -117,14 +114,8 @@ func (w *Worker) upload(f *buffer.Flush) error {
 		return err
 	}
 
-	// Call the notify function with the s3Key and the flushed file.
-	if err := w.notify(s3Key, f); err != nil {
-		metrics.Incr("error", []string{"kind:notification"}, 1)
-		return err
-	}
-
 	metrics.Timing("upload_success", time.Since(start), nil, 1)
-	glog.V(2).Infof("uploaded file: localpath=%q s3-bucket=%q s3-key=%q request-id=%q", f.Path, w.s3bucket, s3Key, s3Response.UploadID)
+	glog.V(2).Infof("uploaded file: localpath=%q s3-bucket=%q s3-key=%q request-id=%q", path, w.s3bucket, s3Key, s3Response.UploadID)
 
 	return nil
 }

@@ -3,7 +3,6 @@ package buffer
 // Adapted from https://github.com/tj/go-disk-buffer
 
 import (
-	"compress/gzip"
 	"context"
 	"io/ioutil"
 	"os"
@@ -117,10 +116,7 @@ func TestBuffer_WriteMessage(t *testing.T) {
 	file, err := os.Open(flushedFile.Path)
 	require.NoError(t, err)
 
-	gzr, err := gzip.NewReader(file)
-	require.NoError(t, err)
-
-	fileBytes, err := ioutil.ReadAll(gzr)
+	fileBytes, err := ioutil.ReadAll(file)
 	require.NoError(t, err)
 
 	require.Equal(t, "{\"test\": \"json\", \"ts\": 0}\n{\"test_2\": \"json_2\", \"ts\": 3599}\n", string(fileBytes))
