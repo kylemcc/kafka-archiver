@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/UnityTech/kafka-archiver/buffer"
-	"github.com/UnityTech/kafka-archiver/partitioner"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/kylemcc/kafka-archiver/buffer"
+	"github.com/kylemcc/kafka-archiver/partitioner"
 	"github.com/stretchr/testify/require"
 )
 

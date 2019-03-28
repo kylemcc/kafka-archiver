@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/UnityTech/kafka-archiver/buffer"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/cenkalti/backoff"
 	"github.com/golang/glog"
+	"github.com/kylemcc/kafka-archiver/buffer"
 )
 
 // Notification is a struct that encapsulates a message sent to

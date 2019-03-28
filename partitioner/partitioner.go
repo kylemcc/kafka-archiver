@@ -2,9 +2,9 @@ package partitioner
 
 import (
 	"github.com/Shopify/sarama"
-	"github.com/UnityTech/kafka-archiver/buffer"
 	cluster "github.com/bsm/sarama-cluster"
 	"github.com/golang/glog"
+	"github.com/kylemcc/kafka-archiver/buffer"
 )
 
 // Config for partitioner.

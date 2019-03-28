@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/UnityTech/kafka-archiver/buffer"
 	cluster "github.com/bsm/sarama-cluster"
 	"github.com/golang/glog"
 	"github.com/google/uuid"
+	"github.com/kylemcc/kafka-archiver/buffer"
 )
 
 var (

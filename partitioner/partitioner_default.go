@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/Shopify/sarama"
-	"github.com/UnityTech/kafka-archiver/buffer"
 	"github.com/golang/glog"
+	"github.com/kylemcc/kafka-archiver/buffer"
 )
 
 // DefaultPartitioner partitions the data by topic and partition.

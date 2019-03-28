@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/UnityTech/kafka-archiver/buffer"
 	"github.com/buger/jsonparser"
 	"github.com/golang/glog"
+	"github.com/kylemcc/kafka-archiver/buffer"
 )
 
 // TimeFieldPartitioner partitions the data in hourly buckets based on a given timestamp.
