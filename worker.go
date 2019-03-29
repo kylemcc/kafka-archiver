@@ -416,13 +416,13 @@ func (w *Worker) compress(f string) (string, error) {
 	}
 
 	if err := gzw.Flush(); err != nil {
-		return "", fmt.Errorf("error writing compressed file: %v", err)
+		return "", fmt.Errorf("failed to flush file: %v", err)
 	}
 	if err := gzw.Close(); err != nil {
-		return "", fmt.Errorf("error writing compressed file: %v", err)
+		return "", fmt.Errorf("failed to close file: %v", err)
 	}
 	if err := cfd.Sync(); err != nil {
-		return "", fmt.Errorf("error writing compressed file: %v", err)
+		return "", fmt.Errorf("failed to sync file: %v", err)
 	}
 
 	return cfd.Name(), nil
