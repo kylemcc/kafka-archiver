@@ -258,16 +258,6 @@ func (b *Buffer) open() error {
 		return err
 	}
 
-	//gzw, err := gzip.NewWriterLevel(f, gzip.BestCompression)
-	//if err != nil {
-	//	return err
-	//}
-
-	//// Override default concurrency settings. Use 4 concurrent blocks.
-	//if err := gzw.SetConcurrency(250000, 4); err != nil {
-	//	glog.Fatal("Gzip configuration issue: ", err)
-	//}
-
 	glog.V(8).Infof("buffer size %d", b.BufferSize)
 	if b.BufferSize != 0 {
 		b.buf = bufio.NewWriterSize(f, b.BufferSize)
